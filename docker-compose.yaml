@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    volumes:
+      - example-db-data:/var/lib/mysql
+      - ./laravel:/var/www
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+      MYSQL_DATABASE: example
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: yosukeMySQL
+
+  # laravel
+  php:
+    build:
+      context: ./php
+    links:
+      - mysql
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./laravel:/var/www
+    depends_on:
+      - mysql
+    tty: true
+    stdin_open: true
+    # command: /sbin/init
+
+  #nginx
+  nginx:
+    image: nginx:1.15.5
+    ports:
+      - "80:80"
+    links:
+      - php
+    depends_on:
+      - php
+    volumes:
+      - ./etc/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./laravel:/var/www
+volumes:
+  example-db-data:
+#    driver: local
+
+
+
